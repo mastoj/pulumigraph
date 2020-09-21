@@ -7,7 +7,7 @@
     <ToolCommandName>pulumigraph</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
-    <version>0.1.0</version>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

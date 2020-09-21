@@ -23,7 +23,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Pack
       run: dotnet test --no-restore --verbosity normal
-    - name: Publish FluentEmail.Core
+    - name: Publish pulumigraph
       uses: brandedoutcast/publish-nuget@v2.5.2
       with:
           PROJECT_FILE_PATH: src/pulumigraph/pulumigraph.fsproj
