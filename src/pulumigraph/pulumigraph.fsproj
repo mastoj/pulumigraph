@@ -6,6 +6,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>pulumigraph</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
+
+    <version>0.1.0</version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,4 @@
     <PackageReference Include="Neo4j.Driver" Version="4.1.1" />
     <PackageReference Include="Thoth.Json.Net" Version="4.1.0" />
   </ItemGroup>
-
-
 </Project>
