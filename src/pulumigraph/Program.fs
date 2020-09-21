@@ -269,19 +269,8 @@ module Neo4j =
     open Thoth.Json.Net
     open Neo4j.Driver
 
-// :params {batch: [{name:"Alice",age:32},{name:"Bob",age:42}]};
-// UNWIND $batch as row
-// CREATE (n:Label)
-// SET n.name = row.name, n.age = row.age
-
     let connect() =
         GraphDatabase.Driver("bolt://localhost:7687")
-
-                // var result = tx.Run("CREATE (a:Greeting) " +
-                //                     "SET a.message = $message " +
-                //                     "RETURN a.message + ', from node ' + id(a)",
-                //     new {message});
-                // return result.Single()[0].As<string>();
 
     let runTask a = a |> Async.AwaitTask |> Async.RunSynchronously
     let deleteAll (client: IDriver) =
