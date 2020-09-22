@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  neo4j:
+    image: neo4j
+    ports:
+      - "7474"
+      - "7687"
+    environment:
+      NEO4J_AUTH: "none"
+      NEO4JLABS_PLUGINS: '["apoc"]'
+    volumes:
+      - type: volume
+        source: neo4jdata
+        target: /data
+      - type: volume
+        source: neo4jimport
+        target: /var/lib/neo4j/import
+
+  pulumigraph:
+    build:
+      context: ./docker
+    image: pulumigraph
+    depends_on:
+      - neo4j
+    entrypoint: [ "/bin/bash" ]
+    command: [ "./wait-for-it.sh", "-t", "30", "neo4j:7474", "--", "/root/.dotnet/tools/pulumigraph" ]
+
+volumes:
+  neo4jdata:
+  neo4jimport:
