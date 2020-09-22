@@ -5,7 +5,7 @@ Simple console app that takes the exported data from pulumi and uploads it to ne
 
 This is distributed as a dotnet tool so install with
 
-    > dotnet tool install pulumigraph
+    > dotnet tool install -g pulumigraph
 
 ## Run tool
 
