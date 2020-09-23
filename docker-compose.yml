@@ -3,8 +3,8 @@ services:
   neo4j:
     image: neo4j
     ports:
-      - "7474"
-      - "7687"
+      - "7474:7474"
+      - "7687:7687"
     environment:
       NEO4J_AUTH: "none"
       NEO4JLABS_PLUGINS: '["apoc"]'
@@ -23,7 +23,20 @@ services:
     depends_on:
       - neo4j
     entrypoint: [ "/bin/bash" ]
-    command: [ "./wait-for-it.sh", "-t", "30", "neo4j:7474", "--", "/root/.dotnet/tools/pulumigraph" ]
+    environment:
+      - PULUMI_ACCESS_TOKEN
+    command: [ "./wait-for-it.sh", "-t", "30", "neo4j:7474", "--", "./.dotnet/tools/pulumigraph", "-h", "neo4j" ]
+
+## For debugging the pulumigraph container
+  # shell:
+  #   build:
+  #     context: ./docker
+  #   image: pulumigraph
+  #   depends_on:
+  #     - neo4j
+  #   entrypoint: [ "/bin/bash" ]
+  #   environment:
+  #     - PULUMI_ACCESS_TOKEN
 
 volumes:
   neo4jdata:
