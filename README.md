@@ -30,8 +30,10 @@ If you need to authenticated or use another url than the default bolt://localhos
     OPTIONS:
 
         --connection-string, -c <string>
-                            Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used
-        --password, -p <string>
+                            Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used, take precedence over host and port.
+        --host, -h <string>   Optional host name, will only be used if provided and connection isn't specified
+        --port, -p <string>   Optional port, will only be used if provided and connection isn't specified, will default to 7687 if not provided
+        --password, -pass <string>
                             Optional password, required if user is provided
         --user, -u <string>   Optional user, if not provided anonymous authentication will be used (the server must be configured to allow that)
         --help                display this list of options.

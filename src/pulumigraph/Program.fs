@@ -6,12 +6,16 @@ open System.Diagnostics
 open Argu
 type Arguments =
     | [<AltCommandLine("-c")>] Connection_String of string
-    | [<AltCommandLine("-p")>] Password of string  
+    | [<AltCommandLine("-h")>] Host of string
+    | [<AltCommandLine("-p")>] Port of string
+    | [<AltCommandLine("-pass")>] Password of string  
     | [<AltCommandLine("-u")>] User of string
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Connection_String _ -> "Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used"
+            | Connection_String _ -> "Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used, take precedence over host and port."
+            | Host _ -> "Optional host name, will only be used if provided and connection isn't specified"
+            | Port _ -> "Optional port, will only be used if provided and connection isn't specified, will default to 7687 if not provided"
             | User _ -> "Optional user, if not provided anonymous authentication will be used (the server must be configured to allow that)"
             | Password _ -> "Optional password, required if user is provided"
 
@@ -361,10 +365,19 @@ let execute neo4jConf =
 let parseArgs (argv: string[]) =
     let argParser = ArgumentParser.Create<Arguments>(programName = "pulumigraph")
     let args : ParseResults<Arguments> = argParser.Parse(argv)
-    let connectionString = if args.Contains(Connection_String) then args.GetResult(Connection_String) else "bolt://localhost:7687"
+    let connectionString =
+        match args.Contains(Connection_String), args.Contains(Host), args.Contains(Port) with
+        | true, _, _ -> args.GetResult(Connection_String)
+        | false, true, false -> sprintf "bolt://%s:7687" (args.GetResult(Host))
+        | false, true, true -> sprintf "bolt://%s:%s" (args.GetResult(Host)) (args.GetResult(Port))
+        | _, _, _ -> "bolt://localhost:7687"
     match args.Contains(User), args.Contains(Password) with
     | true, true -> 
         Authenticated (connectionString, args.GetResult(User), args.GetResult(Password)) |> Some
+    | true, false ->
+        printfn "==> Password required if user is provided"
+        printfn "%s" (argParser.PrintUsage())
+        None
     | false, false ->
         Anonymous connectionString |> Some
     | _, _ ->
@@ -377,6 +390,8 @@ let main argv =
     let arguments = argParser.Parse(argv)
     match parseArgs argv with
     | Some neo4jConf ->
-        execute neo4jConf
+        printfn "%A" neo4jConf
+        
+        //execute neo4jConf
         0
     | None -> 1
