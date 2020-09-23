@@ -3,6 +3,22 @@
 open System
 open System.Diagnostics
 
+open Argu
+type Arguments =
+    | [<AltCommandLine("-c")>] Connection_String of string
+    | [<AltCommandLine("-p")>] Password of string  
+    | [<AltCommandLine("-u")>] User of string
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Connection_String _ -> "Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used"
+            | User _ -> "Optional user, if not provided anonymous authentication will be used (the server must be configured to allow that)"
+            | Password _ -> "Optional password, required if user is provided"
+
+type Neo4jConnectionConfig =
+    | Anonymous of string
+    | Authenticated of connectionString: string * user: string * password: string
+
 [<RequireQualifiedAccess>]
 module Result =
     let sequence (x: List<Result<'a, 'b>>): Result<'a list, 'b> =
@@ -269,8 +285,12 @@ module Neo4j =
     open Thoth.Json.Net
     open Neo4j.Driver
 
-    let connect() =
-        GraphDatabase.Driver("bolt://localhost:7687")
+    let connect conf =
+        match conf with
+        | Anonymous uri ->
+            GraphDatabase.Driver(uri)
+        | Authenticated (uri, user, password) ->
+            GraphDatabase.Driver(uri, AuthTokens.Basic(user, password))
 
     let runTask a = a |> Async.AwaitTask |> Async.RunSynchronously
     let deleteAll (client: IDriver) =
@@ -317,7 +337,8 @@ REMOVE rel.noOp
                     tx.RunAsync(query, {|edges = edges|}) :> System.Threading.Tasks.Task
             )) |> Async.AwaitTask |> Async.RunSynchronously        
 
-let execute() =
+
+let execute neo4jConf =
     let stacks = Pulumi.getStacks()
     printfn "==> Stacks: %A" (stacks |> Result.map(fun stacks -> stacks |> List.filter (fun stack -> stack.Name.Contains("Application"))))
     let allNodes =
@@ -328,7 +349,7 @@ let execute() =
         stacks
         |> Result.map (List.collect Graph.getEdges)
 
-    let client = Neo4j.connect()
+    let client = Neo4j.connect neo4jConf
     Neo4j.deleteAll client
     match allNodes, allEdges with
     | Ok nodes, Ok edges ->
@@ -337,7 +358,25 @@ let execute() =
     | Error ne, _ -> failwith (sprintf "Node error: %s" ne)
     | _, Error ee -> failwith (sprintf "Edge error: %s" ee)
 
+let parseArgs (argv: string[]) =
+    let argParser = ArgumentParser.Create<Arguments>(programName = "pulumigraph")
+    let args : ParseResults<Arguments> = argParser.Parse(argv)
+    let connectionString = if args.Contains(Connection_String) then args.GetResult(Connection_String) else "bolt://localhost:7687"
+    match args.Contains(User), args.Contains(Password) with
+    | true, true -> 
+        Authenticated (connectionString, args.GetResult(User), args.GetResult(Password)) |> Some
+    | false, false ->
+        Anonymous connectionString |> Some
+    | _, _ ->
+        printfn "%s" (argParser.PrintUsage())
+        None
+
 [<EntryPoint>]
 let main argv =
-    execute()
-    0 // return an integer exit code
+    let argParser = ArgumentParser.Create<Arguments>(programName = "pulumigraph")
+    let arguments = argParser.Parse(argv)
+    match parseArgs argv with
+    | Some neo4jConf ->
+        execute neo4jConf
+        0
+    | None -> 1

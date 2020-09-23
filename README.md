@@ -9,7 +9,7 @@ This is distributed as a dotnet tool so install with
 
 ## Run tool
 
-As of now it only supports neo4j running locally with no credentials. To start neo4j in a container run:
+To get a neo4j instance up and running you can run:
 
     > docker run --publish=7474:7474 --publish=7687:7687 --name neo4j --volume=$HOME/neo4j/data:/data -v $HOME/neo4j/import:/var/lib/neo4j/import -e NEO4J_AUTH=none -e NEO4JLABS_PLUGINS=\[\"apoc\"\] neo4j
 
@@ -24,6 +24,19 @@ To run the tool, given that you have logged in with `pulumi login`, you just run
 This will load all the stacks you have access to, created nodes and edges and uplod them to neo4j. It will also print a lot of information. When finished you can go back to http://localhost:7474 and start query the data. To get all data just run:
 
     MATCH (n) RETURN n
+
+If you need to authenticated or use another url than the default bolt://localhost:7687 you have the following options:
+
+    OPTIONS:
+
+        --connection-string, -c <string>
+                            Optional connection string to neo4j, if not provided bolt://localhost:7687 will be used
+        --password, -p <string>
+                            Optional password, required if user is provided
+        --user, -u <string>   Optional user, if not provided anonymous authentication will be used (the server must be configured to allow that)
+        --help                display this list of options.
+
+(Haven't bother to make it super pretty around error handling when parsing arguments, but the functionality is there)
 
 ## The future
 
