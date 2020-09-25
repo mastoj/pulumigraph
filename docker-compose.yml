@@ -25,7 +25,7 @@ services:
     entrypoint: [ "/bin/bash" ]
     environment:
       - PULUMI_ACCESS_TOKEN
-    command: [ "./wait-for-it.sh", "-t", "30", "neo4j:7474", "--", "./.dotnet/tools/pulumigraph", "-h", "neo4j" ]
+    command: [ "./wait-for-it.sh", "-t", "90", "neo4j:7474", "--", "./.dotnet/tools/pulumigraph", "-h", "neo4j" ]
 
 ## For debugging the pulumigraph container
   # shell:
