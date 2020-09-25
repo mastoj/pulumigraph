@@ -390,8 +390,8 @@ let main argv =
     let arguments = argParser.Parse(argv)
     match parseArgs argv with
     | Some neo4jConf ->
-        printfn "%A" neo4jConf
-        
-        //execute neo4jConf
+        printfn "==> Uploading data to neo4j"
+        execute neo4jConf
+        printfn "==> Done uploading data to neo4j"
         0
     | None -> 1
